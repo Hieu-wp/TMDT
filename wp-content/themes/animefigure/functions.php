@@ -91,6 +91,7 @@ add_action( 'wp_enqueue_scripts', 'animefigure_enqueue_assets' );
 function animefigure_widgets_init() {
     $sidebars = [
         [ 'name' => __( 'Sidebar chính', 'animefigure' ), 'id' => 'sidebar-main' ],
+        [ 'name' => __( 'Sidebar Cửa Hàng', 'animefigure' ), 'id' => 'sidebar-shop' ],
         [ 'name' => __( 'Footer Cột 1', 'animefigure' ), 'id' => 'footer-1' ],
         [ 'name' => __( 'Footer Cột 2', 'animefigure' ), 'id' => 'footer-2' ],
         [ 'name' => __( 'Footer Cột 3', 'animefigure' ), 'id' => 'footer-3' ],
@@ -109,6 +110,37 @@ function animefigure_widgets_init() {
     }
 }
 add_action( 'widgets_init', 'animefigure_widgets_init' );
+
+/* =========================================================
+   WOOCOMMERCE LAYOUT
+   ========================================================= */
+// Remove default WooCommerce wrappers
+remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
+remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
+// Remove default WooCommerce sidebar
+remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
+
+// Add custom wrappers
+add_action( 'woocommerce_before_main_content', 'animefigure_wrapper_start', 10 );
+function animefigure_wrapper_start() {
+    echo '<div class="container shop-container" style="padding-top: 40px; padding-bottom: 60px; display: flex; gap: 40px; align-items: flex-start;">';
+    
+    // Print sidebar on the left
+    if ( is_active_sidebar( 'sidebar-shop' ) ) {
+        echo '<aside class="shop-sidebar" style="flex: 0 0 280px; position: sticky; top: 100px;">';
+        dynamic_sidebar( 'sidebar-shop' );
+        echo '</aside>';
+    }
+
+    echo '<div class="shop-main-content" style="flex: 1; min-width: 0;">';
+}
+
+add_action( 'woocommerce_after_main_content', 'animefigure_wrapper_end', 10 );
+function animefigure_wrapper_end() {
+    echo '</div>'; // End shop-main-content
+    echo '</div>'; // End container
+}
+
 
 /* =========================================================
    HELPER FUNCTIONS
@@ -234,6 +266,7 @@ add_filter( 'excerpt_length', 'animefigure_excerpt_length' );
    ========================================================= */
 remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
 remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
+remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
 
 add_action( 'woocommerce_before_main_content', function() {
     echo '<main class="wc-main"><div class="container">';
