@@ -281,3 +281,21 @@ add_filter( 'loop_shop_columns', function() { return 4; } );
 
 // Change products per page
 add_filter( 'loop_shop_per_page', function() { return 20; } );
+
+/* =========================================================
+   ADD "BUY NOW" BUTTON TO SINGLE PRODUCT
+   ========================================================= */
+add_action( 'woocommerce_after_add_to_cart_button', 'animefigure_add_buy_now_button' );
+function animefigure_add_buy_now_button() {
+    global $product;
+    if ( ! $product || ! $product->is_in_stock() ) return;
+    echo '<button type="submit" name="buy_now" value="true" class="button buy-now-btn">Mua ngay</button>';
+}
+
+add_filter( 'woocommerce_add_to_cart_redirect', 'animefigure_buy_now_redirect' );
+function animefigure_buy_now_redirect( $url ) {
+    if ( isset( $_REQUEST['buy_now'] ) && $_REQUEST['buy_now'] ) {
+        return wc_get_checkout_url();
+    }
+    return $url;
+}

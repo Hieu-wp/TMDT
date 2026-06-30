@@ -178,52 +178,6 @@ function render_product_card($product, $idx = 0) {
 </section>
 
 <!-- =========================================================
-     TRUST STRIP
-     ========================================================= -->
-<div class="trust-strip">
-  <div class="container">
-    <div class="trust-grid">
-      <div class="trust-item">
-        <div class="trust-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="trust-text">
-          <h4>Hàng Chính Hãng 100%</h4>
-          <p>Cam kết nguồn gốc rõ ràng</p>
-        </div>
-      </div>
-      <div class="trust-item">
-        <div class="trust-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-        <div class="trust-text">
-          <h4>Giao Hàng Toàn Quốc</h4>
-          <p>Đóng gói cẩn thận, nhanh chóng</p>
-        </div>
-      </div>
-      <div class="trust-item">
-        <div class="trust-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
-        <div class="trust-text">
-          <h4>Đổi Trả 30 Ngày</h4>
-          <p>Không hài lòng, hoàn tiền ngay</p>
-        </div>
-      </div>
-      <div class="trust-item">
-        <div class="trust-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 13.81a19.79 19.79 0 01-3.07-8.68A2 2 0 011.91 3h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 10.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17.92z"/></svg>
-        </div>
-        <div class="trust-text">
-          <h4>Hỗ Trợ 7/7</h4>
-          <p>Hotline: 1800-9999 miễn phí</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- =========================================================
      DANH MỤC NỔI BẬT
      ========================================================= -->
 <section class="section">
@@ -242,25 +196,34 @@ function render_product_card($product, $idx = 0) {
 
     <div class="categories-grid">
       <?php
-      $categories = [
-        ['name' => 'Nendoroid',    'emoji' => '🎭', 'count' => '240+', 'bg' => '#EBF3FD', 'slug' => 'nendoroid'],
-        ['name' => 'Scale Figure', 'emoji' => '⚔️', 'count' => '180+', 'bg' => '#FEF6EE', 'slug' => 'scale-figure'],
-        ['name' => 'Figma',        'emoji' => '🤸', 'count' => '120+', 'bg' => '#F0FFF4', 'slug' => 'figma'],
-        ['name' => 'Pop Up Parade','emoji' => '🌟', 'count' => '95+',  'bg' => '#FDF4FF', 'slug' => 'pop-up-parade'],
-        ['name' => 'Plushie',      'emoji' => '🧸', 'count' => '60+',  'bg' => '#FFFBEB', 'slug' => 'plushie'],
-      ];
-      foreach ($categories as $cat):
-        $term = function_exists('get_term_by') ? get_term_by('slug', $cat['slug'], 'product_cat') : null;
-        $url  = $term ? get_term_link($term) : '#';
+      $terms = get_terms([
+          'taxonomy' => 'product_cat',
+          'hide_empty' => false,
+      ]);
+      $colors = ['#EBF3FD', '#FEF6EE', '#F0FFF4', '#FDF4FF', '#FFFBEB'];
+      $count = 0;
+      if (!is_wp_error($terms) && !empty($terms)) {
+          foreach ($terms as $term):
+            if ($term->slug == 'uncategorized') continue;
+            if ($count >= 5) break;
+            
+            $thumbnail_id = get_term_meta( $term->term_id, 'thumbnail_id', true );
+            $image_url = $thumbnail_id ? wp_get_attachment_url( $thumbnail_id ) : wc_placeholder_img_src();
+            $url  = get_term_link($term);
+            $bg = $colors[$count % 5];
+            $count++;
       ?>
       <a href="<?php echo esc_url($url); ?>" class="category-card reveal">
-        <div class="category-icon" style="background:<?php echo $cat['bg']; ?>;">
-          <?php echo $cat['emoji']; ?>
+        <div class="category-icon" style="background:<?php echo $bg; ?>; padding: 0; overflow: hidden; position: relative;">
+          <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($term->name); ?>" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);">
         </div>
-        <div class="category-name"><?php echo $cat['name']; ?></div>
-        <div class="category-count"><?php echo $cat['count']; ?> sản phẩm</div>
+        <div class="category-name"><?php echo esc_html($term->name); ?></div>
+        <div class="category-count"><?php echo esc_html($term->count); ?> sản phẩm</div>
       </a>
-      <?php endforeach; ?>
+      <?php 
+          endforeach; 
+      }
+      ?>
     </div>
   </div>
 </section>
